@@ -1,0 +1,198 @@
+\documentclass[12pt]{article}
+% \usepackage[english]{babel}
+% \usepackage[utf8x]{inputenc}
+
+\usepackage{graphicx} % Required for inserting images.
+\usepackage[margin=25mm]{geometry}
+\parskip 4.2pt  % Sets spacing between paragraphs.
+% \renewcommand{\baselinestretch}{1.5}  % Uncomment for 1.5 spacing between lines.
+\parindent 8.4pt  % Sets leading space for paragraphs.
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{verbatim}
+\usepackage{hyperref} % Required for inserting clickable links.
+\usepackage{natbib} % Required for APA-style citations.
+\usepackage{titling}
+
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        \includegraphics[width=0.3\linewidth]{Hulogooo.png} 
+        \vspace{1cm}
+
+        \LARGE
+        \textbf{RISC V Pipelined Processor}
+
+        \vspace{1.5cm}
+        \Large
+        \textbf{Final Report}
+
+        \vspace{2cm}
+        \large
+        \textbf{Submitted by:}\\
+        Basil Khowaja \\
+        Hania Kashif \\
+        Saif Nazir\\
+
+        \vspace{0.5cm}
+        \large
+        \textbf{Research Assistant:}\\
+        Haseeb Khan
+
+        \vspace{0.5cm}
+        \large
+       \textbf{ Course Instructor:}\\
+       Dr. Muhammad Farhan
+
+        \vspace{1cm}
+        \large
+        Computer Engineering\\ Habib University\\
+        Fall Semester'23
+
+        \vspace{1cm}
+        \large
+        Date: \today 
+
+        \vfill
+        \small
+        \textit{A report submitted in fulfillment\\
+        of the requirements for the lab project\\ of 
+        CE/CS - 321/330: Computer Architecture}
+
+    \end{center}
+\end{titlepage}
+\tableofcontents
+
+\newpage
+
+
+% \begin{abstract}
+%     hello
+% \end{abstract}
+
+\section{Introduction}\label{sec:intro}
+Our project was to build a 5-stage pipelined RISC V processor capable of executing a bubble sorting algorithm. The tasks we performed were:
+
+\begin{enumerate}
+    \item Converting bubble sort pseudocode to RISC V assembly code and verifying on Venus. Modifying the lab 11 single-cycle processor to run the bubble sort code.
+    \item Pipelining the processor and then performing some test instructions separately to ensure the pipelined version worked correctly.
+    \item Introducing hazard detection circuitry to detect hazards (data, control, and structural) and trying to handle them in hardware i.e.by forwarding, stalling, and flushing the pipeline.
+    \item Comparing the performance of running the array sorting program on Single Cycle Processor with a pipelined RISC-V Processor in terms of execution time.
+    
+\end{enumerate}
+
+\section{Task 1}\label{task1}
+    \subsection{Bubble Sort Pseudocode to Machine Code}\label{task1-0}
+        We first implemented the sorting algorithm in RISC V assembly on the Venus simulator. We had also previously tried implementing sorting in one of the labs so we modified that lab code from the pseudocode. 
+        
+        \begin{figure}[htbp!]
+        % \begin{center}
+            \centering
+            \includegraphics[scale = 0.7]{registers1.png}
+            % \caption{initializing memory with values}
+        % \end{center}
+        \end{figure}
+        \begin{figure}[htbp!]
+        % \begin{center}
+            \centering
+            \includegraphics[scale = 0.7]{registers2.png}
+            \caption{initializing memory with values}
+        % \end{center}
+        \end{figure}
+        
+\newpage
+
+    \subsection{Bubble Sort Implementation Single Cycle}\label{task1-1}
+        We made some minor modifications to the lab 11 module where we instantiated all modules together to make the processor. We also modified ALU and instruction memory code and added a branch unit code to support branch operations. In ALU code, we added functionality for funct3 bit of bgt and blt, and also changed the 4-byte offset to an 8-byte offset as we have a 64-bit processor. We initialized a list and then sorted that on the single-cycle processor using the instruction memory. 
+
+        \begin{lstlisting}[language=Python, caption={python script to initialize instruction memory}, label=lst:example]
+        lst = [// list of machine codes as strings ]
+            for i in range(len(lst)):
+                print(f"inst_mem[{4*i}]=8'h{lst[i][6:8]};")
+                print(f"inst_mem[{4*i+1}]=8'h{lst[i][4:6]};")
+                print(f"inst_mem[{4*i+2}]=8'h{lst[i][2:4]};")
+                print(f"inst_mem[{4*i+3}]=8'h{lst[i][:2]};")
+        \end{lstlisting}
+
+\subsection{Simulation Output}\label{code1}
+    \begin{figure}[htbp!]
+    % \begin{center}
+        \centering
+        \includegraphics[scale = 0.53]{task1 sim.jpg}
+        \caption{Snippet of simulation output}
+    % \end{center}
+    \end{figure}
+   
+    \begin{figure}[htbp!]
+    \begin{center}
+            
+            \includegraphics[scale = 0.6]{task1 sorted.jpg}
+            \caption{Sorted array}
+    \end{center}
+    \end{figure}
+
+\section{Task 2}\label{task2}
+    \subsection{Pipelined RISC V Processor}\label{task2intro}
+    After implementing the algorithm on the single-cycle processor we next modified the code to pipeline the modules. For that, we referred to our course book and then added the following modules to act as intermediate registers for the pipeline:
+    \begin{itemize}
+        \item IF/ID
+        \item ID/EX
+        \item EX/MEM
+        \item MEM/WB
+    \end{itemize}
+    These registers help store the value of previous instruction's data and pass it along the pipeline. We tested each instruction separately to make sure that the pipeline was working correctly. We also implemented the forwarding unit by modifying the previous code so that we can forward data in the pipeline. The forwarding unit will be integrated with the hazard detection unit which determines where to forward data.
+\newpage
+
+\subsection{Simulation Output}\label{code2}
+    \begin{figure}[htbp!]
+    % \begin{center}
+        \centering
+        \includegraphics[scale = 0.31]{task2.jpg}
+        \caption{Snippet of simulation output}
+    % \end{center}
+    \end{figure}
+
+\section{Task 3}\label{task3}
+\subsection{Implementing Hazard Detection Circuitry}\label{hazards}
+    Hazards such as data, structural, and control are dealt with within the code by implementing hazard detection circuitry and stalling the pipeline. These hazards mostly arise from dependencies in the code or if the data needs to be forwarded further at some point. For this, we tried to implement the hazard detection unit that controls when to stall the pipeline or forward the data by signaling the forwarding unit to stall or flush the pipeline.
+
+\newpage
+\subsection{Simulation Output}\label{code3}
+
+    \begin{figure}[htbp!]
+    % \begin{center}
+        \centering
+        \includegraphics[scale = 0.4]{task32.jpg}
+        \caption{Snippet of simulation output}
+    % \end{center}
+    \end{figure}
+    \begin{figure}[htbp!]
+    % \begin{center}
+        \centering
+        \includegraphics[scale = 0.31]{task3.jpg}
+        \caption{sorted array}
+    % \end{center}
+    \end{figure}
+
+\section{Performance Comparison}\label{performance}
+    Pipelined processors are usually faster than non-pipelined processors, but in our case, the pipelined processor is not functioning optimally, with a latency of about 6000ns, which is longer than the 3000ns latency of the non-pipelined processor. Despite the fact that we were able to implement the pipelining of the processor, it came with many issues in efficiency. To improve the performance of our pipelined processor, we need to analyze and optimize its design.
+
+\section{Conclusion and Challenges}\label{performance}
+    Building the processor was a challenge and we had lots of issues because Vivado kept crashing and many of our zipped files didn't open on another PC, or our laptops. The main aim of pipelining was to increase the efficiency of the processor which allows us to perform multiple tasks with ease. We faced a lot of issues with simulations and incorporating stalls at critical points but it was very hard to make the simulation work until the end. The branch conditions were also difficult to incorporate. We faced stall issues due to complexity and dependency issues, but we were still able to make a pipelined processor that dealt with most hazards.
+
+\section{References}
+
+[1] Book. \textit{Course Book}. Computer Organization and Design: The Hardware/Software Interface RISC-V Edition by David A. Patterson, John L. Hennessy
+
+\section{Appendix}
+The GitHub link for our project can be found \href{https://github.com/haniakashif/CA-Project-Fall-23/tree/main}{here}.
+
+    
+\end{document}
