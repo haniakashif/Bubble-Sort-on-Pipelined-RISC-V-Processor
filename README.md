@@ -8,4 +8,4 @@
 
 - Introducing hazard detection mechanisms to make sure sorting works correctly.
 
-The overall project report is also included in the repo, which provides and analysis of the project and our way of implementing Bubble Sort.
+The overall project report is also included, which provides an efficiency analysis of the algorithm and our way of implementing Bubble Sort.
